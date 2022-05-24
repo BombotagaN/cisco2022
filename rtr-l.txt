@@ -2,6 +2,7 @@ RTR-L
 hostname RTR-L
 do wr
 
+
 RTR-L
 int gi 1
 ip address 4.4.4.100 255.255.255.0
@@ -12,14 +13,13 @@ no sh
 end
 wr
 
+
 RTR-L Gitw
 ip route 0.0.0.0 0.0.0.0 4.4.4.1
 
 
 
 RTR-L NAT
-на внутр. интерфейсе - ip nat inside
-на внешн. интерфейсе - ip nat outside
 int gi 1
 ip nat outside
 !
@@ -85,7 +85,9 @@ ip nat inside source static tcp 192.168.100.100 22 4.4.4.100 2222
 
 
 RTR-L
-b. Marshrutizator regiona dolzhen translirovat' sootvetstvuyushchie porty DNS-sluzhby v porty servera SRV.ip nat inside source static tcp 192.168.100.200 53 4.4.4.100 53
+b. Marshrutizator regiona dolzhen translirovat' sootvetstvuyushchie porty DNS-sluzhby v porty servera SRV.
+
+ip nat inside source static tcp 192.168.100.200 53 4.4.4.100 53
 !
 ip nat inside source static udp 192.168.100.200 53 4.4.4.100 53
 
