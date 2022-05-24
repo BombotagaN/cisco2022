@@ -1,0 +1,3 @@
+New-NetFirewallRule -DisplayName "NTP" -Direction Inbound -LocalPort 123 -Protocol UDP -Action Allow
+Start-Service W32Time
+Set-Service -Name W32Time -StartupType Automatic
