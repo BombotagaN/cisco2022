@@ -1,0 +1,87 @@
+Web-r
+
+hostnamectl set-hostname WEB-R
+apt install network-manager vim openssh-server ssh chrony cifs-utils nginx -y
+systemctl start sshd
+systemctl enable ssh
+
+mcedit  /etc/chrony/chrony.conf
+pool ntp.int.demo.wsr iburst
+allow 192.168.100.0/24
+
+mcedit /root/.smbclient
+username=Administrator
+password=Password
+
+mcedit /etc/fstab
+//srv.int.demo.wsr/smb /opt/share cifs user,rw,_netdev,credentials=/root/.smbclient 0 0
+
+mkdir /opt/share
+mount -a
+
+
+
+mkdir /opt/docker_files
+mount /dev/sr0 /opt/docker_files/
+mkdir /files/
+cp /opt/docker_files/
+cp /opt/docker_files/d* /opt/docker_files/con* /opt/docker_files/ip* /files/
+cp /opt/docker_files/appdocker0.zip /opt/docker_files/Readme.txt /opt/
+reboot
+apt install /files/*
+apt install docker-ce -y
+systemctl start docker
+systemctl enable docker
+mkdir /mnt/app
+mount /dev/sr1 /mnt/app
+docker local < /mnt/app/app.tar
+docker images
+docker run --name app -p 8080:80 -d app
+docker ps
+docker load < /mnt/app/appdocker0.zip
+
+apt install nginx -y
+cd /opt/share 
+openssl pkcs12 -nodes -nocerts -in www.pfx -out www.key
+openssl pkcs12 -nodes -nokeys -in www.pfx -out www.key
+cp /opt/share/www.key /etc/nginx/www.key
+cp /opt/share/www.cer /etc/nginx/www.cer
+
+mcedit /etc/nginx/snippets/snakeoil.conf
+ssl_certificate /etc/nginx/www.cer;
+ssl_certificate_key /etc/nginx/www.key;
+
+mcedit /etc/nginx/sites-available/default
+	upstream backend {
+		server 192.168.100.100:8080 fail_timeout=25;
+		server 172.16.100.100:8080 fail_timeout=25;
+	}
+
+	server {
+		listen 443 ssl default_server;
+		include snippers/snakeoil.conf;
+		server_name www.demo.wsr;
+		location / {
+			proxy_pass http://backend;
+		}
+	}
+	server {
+		listen 80 default_server;
+		server_name _;
+		return 301 https://www.demo.wsr;
+	}
+
+systemctl restart nginx
+
+
+na srv 
+scp -P 2244 'root@5.5.5.100:/opt/share/www.pfx' C:\Users\user\Desktop\
+
+proverka na srv:
+
+Invoke-WebRequest -UseBasicParsing -URI "http://www.demo.wsr"
+
+Invoke-WebRequest -UseBasicParsing -URI "https://www.demo.wsr"
+
+
+	
