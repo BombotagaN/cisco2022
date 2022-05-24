@@ -1,0 +1,87 @@
+RTR-R
+int gi 1
+ip address 5.5.5.100 255.255.255.0
+no sh
+int gi 2
+ip address 172.16.100.254 255.255.255.0
+no sh
+end
+wr
+RTR-R
+hostname RTR-R
+do wr
+
+RTR-R NAT
+int gi 1
+ip nat outside
+!
+int gi 2
+ip nat inside
+!
+access-list 1 permit 172.16.100.0 0.0.0.255
+ip nat inside source list 1 interface Gi1 overload
+
+
+RTR-R
+interface Tunne 1
+ip address 172.16.1.2 255.255.255.0
+tunnel mode gre ip
+tunnel source 5.5.5.100
+tunnel destination 4.4.4.100
+router eigrp 6500
+network 172.16.100.0 0.0.0.255
+network 172.16.1.0 0.0.0.255
+
+
+RTR-R
+conf t
+
+crypto isakmp policy 1
+encr aes
+authentication pre-share
+hash sha256
+group 14
+!
+crypto isakmp key TheSecretMustBeAtLeast13bytes address 4.4.4.100
+crypto isakmp nat keepalive 5
+!
+crypto ipsec transform-set TSET  esp-aes 256 esp-sha256-hmac
+mode tunnel
+!
+crypto ipsec profile VTI
+set transform-set TSET
+interface Tunnel1
+tunnel mode ipsec ipv4
+tunnel protection ipsec profile VTI
+
+RTR-R ACL
+ip access-list extended Rnew
+permit tcp any any established
+permit tcp any host 5.5.5.100 eq 80
+permit tcp any host 5.5.5.100 eq 443
+permit tcp any host 5.5.5.100 eq 2244
+permit udp host 4.4.4.100 host 5.5.5.100 eq 500
+permit esp any any
+permit icmp any any
+int gi 1
+ip access-group Rnew in
+
+
+RTR-R NTP
+ip domain name int.demo.wsr
+ip name-server 192.168.100.200
+ntp server ntp.int.demo.wsr
+
+
+
+RTR-R SSH
+ip nat inside source static tcp 172.16.100.100 22 5.5.5.100 2244
+
+
+
+RTR-R
+no ip http secure-server
+wr
+reload
+ip nat inside source static tcp 172.16.100.100 80 5.5.5.100 80
+ip nat inside source static tcp 172.16.100.100 443 5.5.5.100 443
