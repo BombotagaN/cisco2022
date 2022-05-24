@@ -1,0 +1,22 @@
+
+
+
+web-l
+apt install network-manager vim openssh-server ssh chrony cifs-utils nginx -y
+systemctl start sshd
+systemctl enable ssh
+ip domain name int.demo.wsr
+ip name-server 192.168.100.200
+ntp server ntp.int.demo.wsr
+mcedit /etc/chrony/chrony.conf
+    pool ntp.int.demo.wsr iburst
+    allow 192.168.100.0/24
+systemctl restart ntpd
+mcedit /root/.smbclient
+    username=Aministrator
+    passwrord=Password
+mcedit /etc/fstab
+    //srv.int.demo.wsr/smb /opt/share cifs user,rw,_netdev,credentials=/root/.smbclient 0 0
+mkdir /opt/share
+mount -a
+docker load < /mnt/app/appdocker0.zip
